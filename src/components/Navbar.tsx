@@ -1,7 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Sun, Moon } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/lib/ThemeContext';
 
 const navLinks = [
   { name: 'Home', href: '#home' },
@@ -14,12 +16,29 @@ const navLinks = [
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState('home');
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
       const isScrolled = window.scrollY > 10;
       if (isScrolled !== scrolled) {
         setScrolled(isScrolled);
+      }
+      
+      // Update active section based on scroll position
+      const sections = navLinks.map(link => link.href.substring(1));
+      const currentSection = sections.find(section => {
+        const el = document.getElementById(section);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          return rect.top <= 150 && rect.bottom >= 150;
+        }
+        return false;
+      });
+      
+      if (currentSection) {
+        setActiveSection(currentSection);
       }
     };
 
@@ -30,85 +49,170 @@ const Navbar = () => {
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
 
+  const navVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { 
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      } 
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: -20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
+  };
+
+  const isDark = theme === 'dark';
+
   return (
-    <header 
+    <motion.header 
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.5 }}
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-smooth',
         scrolled 
-          ? 'bg-white/80 backdrop-blur-lg shadow-sm py-3' 
+          ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg shadow-sm py-3' 
           : 'bg-transparent py-5'
       )}
     >
       <div className="container mx-auto px-4 flex justify-between items-center">
-        <a 
+        <motion.a 
           href="#" 
-          className="font-display font-bold text-xl text-primary z-50"
+          className="font-display font-bold text-xl text-primary dark:text-white z-50"
           aria-label="Hitech Education Society"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          Hitech<span className="text-primary/80">.</span>
-        </a>
+          Hitech<span className="text-primary/80 dark:text-primary/60">.</span>
+        </motion.a>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
+        <motion.nav 
+          className="hidden md:flex items-center space-x-6"
+          initial="hidden"
+          animate="visible"
+          variants={navVariants}
+        >
           {navLinks.map((link) => (
-            <a
+            <motion.a
               key={link.name}
               href={link.href}
-              className="text-sm font-medium text-muted-foreground hover:text-primary link-underline transition-colors"
+              className={cn(
+                "relative text-sm font-medium transition-colors",
+                activeSection === link.href.substring(1) 
+                  ? "text-primary dark:text-white" 
+                  : "text-muted-foreground hover:text-primary dark:hover:text-white"
+              )}
+              variants={itemVariants}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               {link.name}
-            </a>
+              {activeSection === link.href.substring(1) && (
+                <motion.span
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary dark:bg-white"
+                  layoutId="navbar-underline"
+                />
+              )}
+            </motion.a>
           ))}
-          <a 
+          <motion.a 
             href="#contact" 
-            className="ml-2 px-4 py-2 rounded-full bg-primary text-white text-sm font-medium button-hover"
+            className="ml-2 px-4 py-2 rounded-full bg-primary text-white dark:bg-white dark:text-primary text-sm font-medium hover:shadow-lg transition-all"
+            variants={itemVariants}
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
           >
             Get Started
-          </a>
-        </nav>
+          </motion.a>
+          <motion.button
+            onClick={toggleTheme}
+            className="ml-2 p-2 rounded-full bg-secondary dark:bg-gray-800 text-primary dark:text-white"
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            whileTap={{ scale: 0.9 }}
+            variants={itemVariants}
+          >
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+          </motion.button>
+        </motion.nav>
 
         {/* Mobile Navigation Toggle */}
-        <button 
-          onClick={toggleMenu}
-          className="md:hidden z-50 text-primary p-2 focus:outline-none"
-          aria-label={isOpen ? "Close menu" : "Open menu"}
-        >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="md:hidden flex items-center z-50 space-x-2">
+          <motion.button
+            onClick={toggleTheme}
+            className="p-2 rounded-full bg-secondary dark:bg-gray-800 text-primary dark:text-white"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+          </motion.button>
+          <motion.button 
+            onClick={toggleMenu}
+            className="text-primary dark:text-white p-2 focus:outline-none"
+            aria-label={isOpen ? "Close menu" : "Open menu"}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </motion.button>
+        </div>
 
         {/* Mobile Navigation Menu */}
-        <div 
-          className={cn(
-            "fixed inset-0 bg-white/95 backdrop-blur-lg flex flex-col items-center justify-center z-40 transition-all duration-500 ease-smooth",
-            isOpen 
-              ? "opacity-100 pointer-events-auto" 
-              : "opacity-0 pointer-events-none"
-          )}
-        >
-          <nav className="flex flex-col items-center space-y-8">
-            {navLinks.map((link, i) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={closeMenu}
-                className="text-xl font-medium text-primary"
-                style={{ animationDelay: `${i * 50}ms` }}
-              >
-                {link.name}
-              </a>
-            ))}
-            <a 
-              href="#contact" 
-              onClick={closeMenu}
-              className="mt-4 px-6 py-3 rounded-full bg-primary text-white text-base font-medium button-hover"
-              style={{ animationDelay: `${navLinks.length * 50}ms` }}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div 
+              className="fixed inset-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg flex flex-col items-center justify-center z-40 md:hidden"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
             >
-              Get Started
-            </a>
-          </nav>
-        </div>
+              <motion.nav 
+                className="flex flex-col items-center space-y-8"
+                variants={navVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                {navLinks.map((link, i) => (
+                  <motion.a
+                    key={link.name}
+                    href={link.href}
+                    onClick={closeMenu}
+                    className={cn(
+                      "text-xl font-medium",
+                      activeSection === link.href.substring(1) 
+                        ? "text-primary dark:text-white" 
+                        : "text-muted-foreground dark:text-gray-400"
+                    )}
+                    variants={itemVariants}
+                    custom={i}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {link.name}
+                  </motion.a>
+                ))}
+                <motion.a 
+                  href="#contact" 
+                  onClick={closeMenu}
+                  className="mt-4 px-6 py-3 rounded-full bg-primary text-white dark:bg-white dark:text-primary text-base font-medium shadow-lg hover:shadow-xl transition-all"
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Get Started
+                </motion.a>
+              </motion.nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </header>
+    </motion.header>
   );
 };
 
