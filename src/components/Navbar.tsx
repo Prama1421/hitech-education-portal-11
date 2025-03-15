@@ -123,7 +123,9 @@ const Navbar = () => {
           ))}
           <motion.a 
             href="#contact" 
-            className="ml-2 px-4 py-2 rounded-full bg-primary text-white dark:bg-white dark:text-primary text-sm font-medium hover:shadow-lg transition-all"
+            className={`ml-2 px-4 py-2 rounded-full bg-primary text-sm font-medium hover:shadow-lg transition-all ${
+              theme === 'dark' ? 'dark:bg-white dark:text-primary' : 'text-white'
+            }`}
             variants={itemVariants}
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
@@ -200,7 +202,9 @@ const Navbar = () => {
                 <motion.a 
                   href="#contact" 
                   onClick={closeMenu}
-                  className="mt-4 px-6 py-3 rounded-full bg-primary text-white dark:bg-white dark:text-primary text-base font-medium shadow-lg hover:shadow-xl transition-all"
+                  className={`mt-4 px-6 py-3 rounded-full bg-primary font-medium shadow-lg hover:shadow-xl transition-all text-base ${
+                    theme === 'dark' ? 'dark:bg-white dark:text-primary' : 'text-white'
+                  }`}
                   variants={itemVariants}
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
