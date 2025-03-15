@@ -83,11 +83,16 @@ const Navbar = () => {
       <div className="container mx-auto px-4 flex justify-between items-center">
         <motion.a 
           href="#" 
-          className="font-display font-bold text-xl text-primary dark:text-white z-50"
+          className="font-display font-bold text-xl text-primary dark:text-white z-50 flex items-center gap-2"
           aria-label="Hitech Education Society"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
+          <img 
+            src="/placeholder.svg" 
+            alt="Hitech Logo" 
+            className="h-8 w-8 object-contain"
+          />
           Hitech<span className="text-primary/80 dark:text-primary/60">.</span>
         </motion.a>
 
